@@ -1,0 +1,55 @@
+#Ignore Visual Studio specific files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vssscc
+*.ncrunchsolution
+
+# Ignore build artifacts
+bin/
+obj/
+out/
+debug/
+release/
+TestResults/
+project.lock.json
+project.fragment.lock.json
+*.pidb
+*.mdb
+*.ilk
+*.pdb
+*.log
+
+# Ignore dependency & NuGet-related files
+packages/
+!packages/repositories.config
+*.nupkg
+*.snupkg
+.nuget/
+
+# Ignore database-related files
+Migrations/
+database.sqlite
+*.mdf
+*.ldf
+
+# Ignore configuration & secret files
+appsettings.json
+appsettings.Development.json
+secrets.json
+secrets/
+.env
+
+#Ignore Rider and VS Code settings
+.idea/
+.vscode/
+
+# Ignore generated files
+*.generated.cs
+*.swagger
+
+# Ignore log files
+logs/
+*.log
