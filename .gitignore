@@ -41,6 +41,8 @@ appsettings.Development.json
 secrets.json
 secrets/
 .env
+Properties/launchSettings.json
+
 
 #Ignore Rider and VS Code settings
 .idea/
