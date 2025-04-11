@@ -12,5 +12,8 @@
         public string NIN { get; set; }
         public string DateOfBirth { get; set; }
 
+        //navigation
+        public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+
     }
 }
