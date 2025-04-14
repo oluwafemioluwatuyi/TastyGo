@@ -1,4 +1,5 @@
-﻿using TastyGo.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using TastyGo.Data;
 using TastyGo.Interfaces.IRepositories;
 using TastyGo.Models;
 
@@ -19,12 +20,13 @@ namespace TastyGo.Repositories
 
         public void Delete(User user)
         {
-            throw new NotImplementedException();
+            DbContext.Users.Remove(user);
         }
 
-        public Task<bool> EmailExistsAsync(string email)
+        public async Task<bool> EmailExistsAsync(string email)
         {
-            throw new NotImplementedException();
+            return await DbContext.Users.AnyAsync(u => u.Email == email);
+
         }
 
         public Task<IEnumerable<User>> GetAllAsync()
@@ -32,14 +34,15 @@ namespace TastyGo.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<User?> GetByEmailAsync(string email)
+        public async Task<User?> GetByEmailAsync(string email)
         {
-            throw new NotImplementedException();
+            return await DbContext.Users.FirstOrDefaultAsync(x => x.Email == email);
         }
 
-        public Task<User?> GetByIdAsync(Guid id)
+        public async Task<User?> GetByIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            return await DbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+
         }
 
         public Task<User?> GetSystemUserAsync()
