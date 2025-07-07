@@ -1,6 +1,6 @@
 ﻿namespace TastyGo.Models
 {
-    public class UserRole
+    public class UserRole : AuditableEntity
     {
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
