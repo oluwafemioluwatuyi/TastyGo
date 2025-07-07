@@ -2,6 +2,6 @@
 {
     public enum UserType
     {
-        User, Vendor, Admin, Delivery
+        User, Vendor, Admin, Driver
     }
 }

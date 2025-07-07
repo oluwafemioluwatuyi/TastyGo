@@ -2,18 +2,22 @@
 {
     public class User
     {
-        public Guid Id { get; set; } 
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
         public string Phone { get; set; }
         public UserType userType { get; set; }
-        public string Address { get; set; }
         public string NIN { get; set; }
         public string DateOfBirth { get; set; }
 
         //navigation
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+        public ICollection<Address> Addresses { get; set; }
+        public ICollection<Order> Orders { get; set; }
+        public Driver DriverInfo { get; set; }
+        public Vendor VendorInfo { get; set; }
+
 
     }
 }
