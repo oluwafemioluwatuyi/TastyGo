@@ -1,23 +1,14 @@
+using TastyGo.DTOs;
+using TastyGo.Helpers;
+
 namespace TastyGo.Interfaces.Services
 {
     public interface IAuthService
     {
-        // Registration
-        //Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request);
-
-        // Login
-        //Task<AuthResponseDto> LoginAsync(LoginRequestDto request);
-
-        // Logout (optional in stateless JWT scenarios)
+        Task<ServiceResponse<object>> RegisterAsync(RegisterRequestDto request);
+        Task<ServiceResponse<object>> LoginAsync(LoginRequestDto request);
         Task LogoutAsync();
-
-        // Refresh token (if you're using JWT with refresh tokens)
-        //Task<AuthResponseDto> RefreshTokenAsync(string refreshToken);
-
-        // Email verification
         Task<bool> VerifyEmailAsync(string token);
-
-        // Send email verification
         Task SendEmailVerificationAsync(string email);
 
         // Forgot Password

@@ -1,4 +1,6 @@
-﻿using TastyGo.Interfaces.Services;
+﻿using TastyGo.DTOs;
+using TastyGo.Helpers;
+using TastyGo.Interfaces.Services;
 
 namespace TastyGo.Services
 {
@@ -9,7 +11,17 @@ namespace TastyGo.Services
             throw new NotImplementedException();
         }
 
+        public Task<ServiceResponse<object>> LoginAsync(LoginRequestDto request)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task LogoutAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ServiceResponse<object>> RegisterAsync(RegisterRequestDto request)
         {
             throw new NotImplementedException();
         }
