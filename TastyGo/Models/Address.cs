@@ -1,8 +1,11 @@
-﻿namespace TastyGo.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace TastyGo.Models
 {
     public class Address : AuditableEntity
     {
         public Guid Id { get; set; }
+        public Guid UserId { get; set; }
         public string Street { get; set; } = string.Empty;
         public string City { get; set; } = string.Empty;
         public string State { get; set; } = string.Empty;

@@ -1,8 +1,11 @@
-﻿namespace TastyGo.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace TastyGo.Models
 {
     public class Payment : AuditableEntity
     {
         public Guid Id { get; set; }
+
         public Guid OrderId { get; set; }
         public string PaymentMethod { get; set; } = string.Empty;
         public decimal Amount { get; set; }

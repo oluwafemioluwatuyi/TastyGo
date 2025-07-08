@@ -10,13 +10,15 @@
         public UserType userType { get; set; }
         public string NIN { get; set; }
         public string DateOfBirth { get; set; }
+        public bool IsEmailVerified { get; set; }
+        public string? EmailVerificationToken { get; set; }
+        public DateTime? EmailVerificationTokenExpiry { get; set; }
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpiry { get; set; }
 
         //navigation
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
-        public ICollection<Address> Addresses { get; set; }
-        public ICollection<Order> Orders { get; set; }
-        public Driver DriverInfo { get; set; }
-        public Vendor VendorInfo { get; set; }
+
 
 
     }

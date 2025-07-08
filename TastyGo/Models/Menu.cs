@@ -1,8 +1,12 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace TastyGo.Models
 {
     public class Menu : AuditableEntity
     {
         public Guid Id { get; set; }
+
+        public Guid RestaurantId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
@@ -12,7 +16,7 @@ namespace TastyGo.Models
 
         // Navigation properties
         public Restaurant Restaurant { get; set; }
-        public ICollection<OrderItem> OrderItems { get; set; }
+
 
     }
 }

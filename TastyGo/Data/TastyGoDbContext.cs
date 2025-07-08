@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using TastyGo.Models;
 
 namespace TastyGo.Data
@@ -12,6 +13,8 @@ namespace TastyGo.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+
 
             // Configure the enum converter for MyEntity and its MyEnumProperty
             ConfigureEnumConverter<User, UserType>(modelBuilder, e => e.userType);
@@ -33,9 +36,16 @@ namespace TastyGo.Data
             ConfigureAuditableEntity<RolePermission>(modelBuilder);
             ConfigureAuditableEntity<Module>(modelBuilder);
 
-            // Configure unique properties
-
-
+            // Configure delete behaviors
+            // ConfigureDeleteBehavior<Order, Restaurant>(modelBuilder, o => o.Restaurant, DeleteBehavior.Restrict);
+            ConfigureDeleteBehavior<Order, User>(modelBuilder, o => o.User, DeleteBehavior.Restrict);
+            // ConfigureDeleteBehavior<Order, OrderItem>(modelBuilder, o => o.OrderItem, DeleteBehavior.Restrict);
+            ConfigureDeleteBehavior<Menu, Restaurant>(modelBuilder, o => o.Restaurant, DeleteBehavior.Restrict);
+            //ConfigureDeleteBehavior<Order, Payment>(modelBuilder, o => o.Payment, o => o.Order, o => o.OrderId, DeleteBehavior.Restrict);
+            // ConfigureDeleteBehavior<Address, User>(modelBuilder, o => o.User, DeleteBehavior.Cascade);
+            // ConfigureDeleteBehavior<User, Driver>(modelBuilder, u => u.DriverInfo, d => d.User, d => d.UserId, DeleteBehavior.Cascade);
+            //<User, Vendor>(modelBuilder, u => u.VendorInfo, v => v.User, v => v.UserId, DeleteBehavior.Cascade
+            //);
 
 
         }
@@ -70,6 +80,29 @@ namespace TastyGo.Data
             modelBuilder.Entity<TEntity>()
                 .Property(propertyExpression)
                 .HasConversion<string>();
+        }
+        private void ConfigureDeleteBehavior<TEntity, TRelatedEntity>(ModelBuilder modelBuilder, Expression<Func<TEntity, TRelatedEntity>> navigationExpression, DeleteBehavior deleteBehavior)
+           where TEntity : class
+           where TRelatedEntity : class
+        {
+            modelBuilder.Entity<TEntity>()
+                .HasOne(navigationExpression)
+                .WithMany()
+                .OnDelete(deleteBehavior);
+        }
+
+        // One-to-one
+        private void ConfigureDeleteBehavior<TEntity, TRelatedEntity>(ModelBuilder modelBuilder, Expression<Func<TEntity, TRelatedEntity>> navigationExpression, Expression<Func<TRelatedEntity, TEntity>> inverseNavigation,
+            Expression<Func<TRelatedEntity, object>> foreignKeyExpression,
+            DeleteBehavior deleteBehavior)
+            where TEntity : class
+            where TRelatedEntity : class
+        {
+            modelBuilder.Entity<TEntity>()
+                .HasOne(navigationExpression)
+                .WithOne(inverseNavigation)
+                .HasForeignKey(foreignKeyExpression)
+                .OnDelete(deleteBehavior);
         }
 
         public DbSet<User> Users { get; set; }
