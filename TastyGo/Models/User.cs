@@ -8,6 +8,9 @@
         public string Password { get; set; }
         public string Phone { get; set; }
         public UserType userType { get; set; }
+
+        public string Pin { get; set; }
+        public bool PinCreated { get; set; }
         public string NIN { get; set; }
         public string DateOfBirth { get; set; }
         public bool IsEmailVerified { get; set; }

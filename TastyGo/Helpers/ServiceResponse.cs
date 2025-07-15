@@ -7,7 +7,7 @@ namespace TastyGo.Helpers
         public string Message { get; set; }
         public string StatusCode { get; set; }
 
-        public ServiceResponse(ResponseStatus status, T data, string message, AppStatusCode statusCode)
+        public ServiceResponse(ResponseStatus status, string message, AppStatusCode statusCode, T data)
         {
             Status = status;
             Data = data;

@@ -29,9 +29,9 @@ namespace TastyGo.Repositories
 
         }
 
-        public Task<IEnumerable<User>> GetAllAsync()
+        public async Task<IEnumerable<User>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return await DbContext.Users.ToListAsync();
         }
 
         public async Task<User?> GetByEmailAsync(string email)
@@ -57,7 +57,7 @@ namespace TastyGo.Repositories
 
         public void Update(User user)
         {
-            throw new NotImplementedException();
+            DbContext.Users.Update(user);
         }
     }
 }

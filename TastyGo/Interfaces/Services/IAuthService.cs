@@ -8,8 +8,9 @@ namespace TastyGo.Interfaces.Services
         Task<ServiceResponse<object>> RegisterAsync(RegisterRequestDto request);
         Task<ServiceResponse<object>> LoginAsync(LoginRequestDto request);
         Task LogoutAsync();
-        Task<bool> VerifyEmailAsync(string token);
-        Task SendEmailVerificationAsync(string email);
+        Task<ServiceResponse<object>> VerifyEmail(EmailVerifyDto emailVerifyDto);
+        Task<ServiceResponse<object>> ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto);
+        Task<ServiceResponse<object>> ResetPasswordAsync(ResetPasswordDto resetPasswordDto);
 
         // Forgot Password
         Task SendPasswordResetTokenAsync(string email);
@@ -18,7 +19,7 @@ namespace TastyGo.Interfaces.Services
         //Task<bool> ResetPasswordAsync(ResetPasswordDto request);
 
         // Check if email exists (before register or reset password)
-        Task<bool> EmailExistsAsync(string email);
+
 
         // Optional: Get current logged-in user (from token context)
         //Task<UserDto> GetLoggedInUserAsync();

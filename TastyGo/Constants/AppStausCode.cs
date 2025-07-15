@@ -3,7 +3,7 @@ namespace TastyGo.Helpers
     public enum AppStatusCode
     {
         // General (1000–1099)
-        OK = 1000,
+        SUCCESS = 1000,
         CREATED = 1001,
         NOT_FOUND = 1002,
         UNAUTHORIZED = 1003,
@@ -11,10 +11,13 @@ namespace TastyGo.Helpers
         CONFLICT = 1005,
         VALIDATION_ERROR = 1006,
 
+        INVALID_PASSWORD_EMAIL = 1007,
+
         // Authentication & Account (1100–1199)
         AUTH_SUCCESS = 1100,
         AUTH_FAILED = 1101,
-        EMAIL_ALREADY_USED = 1102,
+
+        EMAIL_ALREADY_EXISTS = 1102,
         EMAIL_NOT_VERIFIED = 1103,
         ACCOUNT_LOCKED = 1104,
         ACCOUNT_NOT_FOUND = 1105,

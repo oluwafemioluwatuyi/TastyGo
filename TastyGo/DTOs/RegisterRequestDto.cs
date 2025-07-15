@@ -9,6 +9,7 @@ namespace TastyGo.DTOs
 
         public string Email { get; set; }
         public string Phone { get; set; }
+        public string? DateOfBirth { get; set; } // Format: YYYY-MM-DD
 
         public string Password { get; set; }
         public string ConfirmPassword { get; set; }
@@ -16,6 +17,8 @@ namespace TastyGo.DTOs
         public UserType UserType { get; set; } // Enum: Customer, Vendor, Driver
 
         // Optional: For Drivers
+        public string? NIN { get; set; } // National Identification Number
+
         public string? VehicleNumber { get; set; }
         public string? LicenseNumber { get; set; }
 
