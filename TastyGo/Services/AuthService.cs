@@ -21,13 +21,15 @@ namespace TastyGo.Services
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
-        public AuthService(IUserRepository userRepository, IConstants constants, IMapper mapper, IConfiguration configuration, ILogger<AuthService> logger)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public AuthService(IUserRepository userRepository, IConstants constants, IMapper mapper, IConfiguration configuration, ILogger<AuthService> logger, IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
             _mapper = mapper;
             _configuration = configuration;
             _logger = logger;
             _constants = constants;
+            _httpContextAccessor = httpContextAccessor;
 
 
         }
@@ -38,12 +40,12 @@ namespace TastyGo.Services
         {
             if (registerRequestDto.UserType != UserType.User && registerRequestDto.UserType != UserType.Vendor && registerRequestDto.UserType != UserType.Driver)
             {
-                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Invalid user type specified.", AppStatusCode.VALIDATION_ERROR, null);
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Invalid user type specified.", AppStatusCode.ValidationError, null);
             }
             // Validaate that passwords match
             if (registerRequestDto.Password != registerRequestDto.ConfirmPassword)
             {
-                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Passwords do not match.", AppStatusCode.VALIDATION_ERROR, null);
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Passwords do not match.", AppStatusCode.ValidationError, null);
             }
             // Check if email already exists
             var alreadyExistingUser = await _userRepository.GetByEmailAsync(registerRequestDto.Email);
@@ -60,7 +62,7 @@ namespace TastyGo.Services
                         // Ensure both LicenseNumber and NIN are provided
                         if (string.IsNullOrWhiteSpace(registerRequestDto.LicenseNumber) || string.IsNullOrWhiteSpace(registerRequestDto.NIN))
                         {
-                            return new ServiceResponse<object>(ResponseStatus.BadRequest, "License number and NIN are required for drivers.", AppStatusCode.VALIDATION_ERROR, null);
+                            return new ServiceResponse<object>(ResponseStatus.BadRequest, "License number and NIN are required for drivers.", AppStatusCode.ValidationError, null);
                         }
 
                         // Verify BVN
@@ -73,7 +75,7 @@ namespace TastyGo.Services
                         });
 
                         if (!isValidBvn)
-                            return new ServiceResponse<object>(ResponseStatus.BadRequest, bvnMessage, AppStatusCode.VALIDATION_ERROR, null);
+                            return new ServiceResponse<object>(ResponseStatus.BadRequest, bvnMessage, AppStatusCode.ValidationError, null);
 
                         // Verify License
                         var (isValidLicense, licenseMessage) = await VerifyLicense(new VerifyLicenseDto
@@ -84,7 +86,7 @@ namespace TastyGo.Services
                         });
 
                         if (!isValidLicense)
-                            return new ServiceResponse<object>(ResponseStatus.BadRequest, licenseMessage, AppStatusCode.VALIDATION_ERROR, null);
+                            return new ServiceResponse<object>(ResponseStatus.BadRequest, licenseMessage, AppStatusCode.ValidationError, null);
 
                         break;
                     }
@@ -101,7 +103,7 @@ namespace TastyGo.Services
                         break;
                     }
                 default:
-                    return new ServiceResponse<object>(ResponseStatus.BadRequest, "Invalid user type specified.", AppStatusCode.VALIDATION_ERROR, null);
+                    return new ServiceResponse<object>(ResponseStatus.BadRequest, "Invalid user type specified.", AppStatusCode.ValidationError, null);
             }
 
             // Map DTO to User model and hash the password
@@ -144,7 +146,7 @@ namespace TastyGo.Services
             // send email verification
             await SendVerificationMail(user, emailVerificationToken);
 
-            return new ServiceResponse<object>(ResponseStatus.Success, "Registration was successful", AppStatusCode.CREATED, new
+            return new ServiceResponse<object>(ResponseStatus.Success, "Registration was successful", AppStatusCode.Success, new
             {
                 user = _mapper.Map<UserDto>(user),
             });
@@ -172,7 +174,7 @@ namespace TastyGo.Services
             var jwtToken = CreateJwtToken(user);
             // Map user to UserDto
             var userDto = _mapper.Map<UserDto>(user);
-            return new ServiceResponse<object>(ResponseStatus.Success, "Login successful.", AppStatusCode.SUCCESS, new
+            return new ServiceResponse<object>(ResponseStatus.Success, "Login successful.", AppStatusCode.Success, new
             {
                 Token = jwtToken,
                 User = userDto
@@ -224,7 +226,7 @@ namespace TastyGo.Services
             // Validate that new passwords match
             if (resetPasswordDto.NewPassword != resetPasswordDto.ConfirmPassword)
             {
-                return new ServiceResponse<object>(ResponseStatus.BadRequest, "New passwords do not match.", AppStatusCode.VALIDATION_ERROR, null);
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "New passwords do not match.", AppStatusCode.ValidationError, null);
             }
             // Hash the new password
             user.Password = HashPassword(resetPasswordDto.NewPassword);
@@ -239,7 +241,7 @@ namespace TastyGo.Services
             {
                 return new ServiceResponse<object>(ResponseStatus.Error, "Failed to reset password. Please try again later.", AppStatusCode.SERVER_ERROR, null);
             }
-            return new ServiceResponse<object>(ResponseStatus.Success, "Password reset successful.", AppStatusCode.SUCCESS, null);
+            return new ServiceResponse<object>(ResponseStatus.Success, "Password reset successful.", AppStatusCode.Success, null);
 
         }
 
@@ -285,10 +287,130 @@ namespace TastyGo.Services
                 return new ServiceResponse<object>(ResponseStatus.Error, "Failed to verify email. Please try again later.", AppStatusCode.SERVER_ERROR, null);
             }
 
-            return new ServiceResponse<object>(ResponseStatus.Success, "Email verification successful.", AppStatusCode.SUCCESS, null);
+            return new ServiceResponse<object>(ResponseStatus.Success, "Email verification successful.", AppStatusCode.Success, null);
 
 
         }
+
+        public async Task<ServiceResponse<object>> CreatePin(CreatePinDto createPinDto)
+        {
+            var userId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId();
+
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user is null)
+            {
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "User does not exist", AppStatusCode.ResourceNotFound, null);
+            }
+            // 2. Validate if PIN already exists (optional: skip if you want to allow overwrite)
+            if (user.PinCreated)
+            {
+                return new ServiceResponse<object>(
+                    ResponseStatus.BadRequest,
+                    "PIN already created. Please reset it instead.",
+                    AppStatusCode.PIN_ALREADY_CREATED,
+                    null
+                );
+            }
+
+            // 3. Validate PIN match
+            if (createPinDto.Pin != createPinDto.ConfirmPin)
+            {
+                return new ServiceResponse<object>(
+                    ResponseStatus.BadRequest,
+                    "PINs do not match.",
+                    AppStatusCode.ValidationError,
+                    null
+                );
+            }
+            // Validate the format of the pin
+            var pinOnlyContainsNumber = Utilities.IsStringNumericRegex(createPinDto.Pin);
+            if (!pinOnlyContainsNumber)
+            {
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Invalid pin format", AppStatusCode.ValidationError, null);
+            }
+
+
+            // 4. Hash the PIN (you can reuse your `HashPassword()` method)
+            user.Pin = HashPassword(createPinDto.Pin);
+            user.PinCreated = true;
+            user.ModifiedAt = DateTime.UtcNow;
+
+            _userRepository.Update(user);
+
+            var result = await _userRepository.SaveChangesAsync();
+            if (!result)
+            {
+                return new ServiceResponse<object>(
+                    ResponseStatus.Error,
+                    "Something went wrong while creating PIN.",
+                    AppStatusCode.SERVER_ERROR,
+                    null
+                );
+            }
+
+            return new ServiceResponse<object>(
+                ResponseStatus.Success,
+                "PIN created successfully.",
+                AppStatusCode.Created,
+                null
+            );
+
+        }
+
+        public async Task<ServiceResponse<object>> ResetPin(ResetPinDto resetPinDto)
+        {
+            var userId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId();
+
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user is null)
+            {
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "User does not exist", AppStatusCode.ResourceNotFound, null);
+            }
+
+            // Check if user has created a pin
+            if (!user.PinCreated)
+            {
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "User does not have a pin", AppStatusCode.NoPinCreated, null);
+            }
+
+            //Confirm if old pin is correct
+            var isOldPinCorrect = VerifyPassword(resetPinDto.OldPin, user.Pin);
+
+            if (!isOldPinCorrect)
+            {
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Invalid credentials", AppStatusCode.ValidationError, null);
+
+            }
+
+            // Check if pin match
+            if (resetPinDto.NewPin != resetPinDto.NewPin)
+            {
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Pin does not match", AppStatusCode.ValidationError, null);
+            }
+
+            //Validate that pin is in the right format
+            var pinOnlyContainsNumbers = Utilities.IsStringNumericRegex(resetPinDto.NewPin);
+
+            if (!pinOnlyContainsNumbers)
+            {
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Invalid pin format", AppStatusCode.ValidationError, null);
+            }
+
+            // Change pin
+            user.Pin = HashPassword(resetPinDto.NewPin);
+            user.ModifiedAt = DateTime.UtcNow;
+
+            _userRepository.Update(user);
+            var result = await _userRepository.SaveChangesAsync();
+            if (!result)
+            {
+                return new ServiceResponse<object>(ResponseStatus.Error, "Something went wrong", AppStatusCode.InternalServerError, null);
+            }
+
+            return new ServiceResponse<object>(ResponseStatus.Success, "Pin changed successfully", AppStatusCode.Success, null);
+        }
+
+
 
         private string CreateJwtToken(User user)
         {

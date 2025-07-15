@@ -11,6 +11,8 @@ namespace TastyGo.Interfaces.Services
         Task<ServiceResponse<object>> VerifyEmail(EmailVerifyDto emailVerifyDto);
         Task<ServiceResponse<object>> ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto);
         Task<ServiceResponse<object>> ResetPasswordAsync(ResetPasswordDto resetPasswordDto);
+        Task<ServiceResponse<object>> CreatePin(CreatePinDto createPinDto);
+        Task<ServiceResponse<object>> ResetPin(ResetPinDto resetPinDto);
 
         // Forgot Password
         Task SendPasswordResetTokenAsync(string email);
