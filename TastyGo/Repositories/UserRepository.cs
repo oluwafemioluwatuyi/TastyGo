@@ -55,9 +55,9 @@ namespace TastyGo.Repositories
             return await DbContext.SaveChangesAsync() > 0;
         }
 
-        public void Update(User user)
+        public void MarkAsModified(User user)
         {
-            DbContext.Users.Update(user);
+            DbContext.Entry(user).State = EntityState.Modified;
         }
     }
 }

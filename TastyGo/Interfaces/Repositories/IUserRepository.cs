@@ -9,7 +9,7 @@ namespace TastyGo.Interfaces.IRepositories
         Task<IEnumerable<User>> GetAllAsync();
         Task<User?> GetSystemUserAsync();
         void Add(User user);
-        void Update(User user);
+        void MarkAsModified(User user);
         void Delete(User user);
         Task<bool> EmailExistsAsync(string email);
         Task<bool> SaveChangesAsync();

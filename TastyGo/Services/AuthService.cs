@@ -194,7 +194,7 @@ namespace TastyGo.Services
             var resetToken = RandomCharacterGenerator.GenerateRandomString(_constants.PASSWORD_RESET_TOKEN_LENGTH);
             user.PasswordResetToken = resetToken;
             user.PasswordResetTokenExpiry = DateTime.UtcNow.AddMinutes(_constants.PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES);
-            _userRepository.Update(user);
+            _userRepository.MarkAsModified(user);
             // Save changes to the database
             var saveResult = await _userRepository.SaveChangesAsync();
             if (!saveResult)
@@ -234,7 +234,7 @@ namespace TastyGo.Services
             user.PasswordResetToken = null;
             user.PasswordResetTokenExpiry = null;
             // Update the user in the repository
-            _userRepository.Update(user);
+            _userRepository.MarkAsModified(user);
             // Save changes to the database
             var saveResult = await _userRepository.SaveChangesAsync();
             if (!saveResult)
@@ -280,7 +280,7 @@ namespace TastyGo.Services
             user.EmailVerificationTokenExpiry = null;
 
             // Save changes to the database
-            _userRepository.Update(user);
+            _userRepository.MarkAsModified(user);
             var saveResult = await _userRepository.SaveChangesAsync();
             if (!saveResult)
             {
@@ -335,7 +335,7 @@ namespace TastyGo.Services
             user.PinCreated = true;
             user.ModifiedAt = DateTime.UtcNow;
 
-            _userRepository.Update(user);
+            _userRepository.MarkAsModified(user);
 
             var result = await _userRepository.SaveChangesAsync();
             if (!result)
@@ -400,7 +400,7 @@ namespace TastyGo.Services
             user.Pin = HashPassword(resetPinDto.NewPin);
             user.ModifiedAt = DateTime.UtcNow;
 
-            _userRepository.Update(user);
+            _userRepository.MarkAsModified(user);
             var result = await _userRepository.SaveChangesAsync();
             if (!result)
             {
