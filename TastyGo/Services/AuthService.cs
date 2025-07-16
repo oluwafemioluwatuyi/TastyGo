@@ -21,15 +21,15 @@ namespace TastyGo.Services
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        public AuthService(IUserRepository userRepository, IConstants constants, IMapper mapper, IConfiguration configuration, ILogger<AuthService> logger, IHttpContextAccessor httpContextAccessor)
+        private readonly IUserContextService _userContextService;
+        public AuthService(IUserRepository userRepository, IConstants constants, IMapper mapper, IConfiguration configuration, ILogger<AuthService> logger, IUserContextService userContextService)
         {
             _userRepository = userRepository;
             _mapper = mapper;
             _configuration = configuration;
             _logger = logger;
             _constants = constants;
-            _httpContextAccessor = httpContextAccessor;
+            _userContextService = userContextService;
 
 
         }
@@ -51,7 +51,7 @@ namespace TastyGo.Services
             var alreadyExistingUser = await _userRepository.GetByEmailAsync(registerRequestDto.Email);
             if (alreadyExistingUser != null)
             {
-                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Email already exists.", AppStatusCode.EMAIL_ALREADY_EXISTS, null);
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Email already exists.", AppStatusCode.EmailAlreadyExists, null);
             }
 
             // user type specific validations
@@ -140,7 +140,7 @@ namespace TastyGo.Services
             var userSaveResult = await _userRepository.SaveChangesAsync();
             if (!userSaveResult)
             {
-                return new ServiceResponse<object>(ResponseStatus.Error, "Failed to register user. Please try again later.", AppStatusCode.SERVER_ERROR, null);
+                return new ServiceResponse<object>(ResponseStatus.Error, "Failed to register user. Please try again later.", AppStatusCode.InternalServerError, null);
             }
 
             // send email verification
@@ -158,17 +158,17 @@ namespace TastyGo.Services
             var user = await _userRepository.GetByEmailAsync(request.Email);
             if (user is null)
             {
-                return new ServiceResponse<object>(ResponseStatus.NotFound, "User not found.", AppStatusCode.ACCOUNT_NOT_FOUND, null);
+                return new ServiceResponse<object>(ResponseStatus.NotFound, "User not found.", AppStatusCode.AccountNotFound, null);
             }
             // Verify the password
             if (!VerifyPassword(request.Password, user.Password))
             {
-                return new ServiceResponse<object>(ResponseStatus.Unauthorized, "Invalid password.", AppStatusCode.INVALID_PASSWORD_EMAIL, null);
+                return new ServiceResponse<object>(ResponseStatus.Unauthorized, "Invalid password.", AppStatusCode.InvalidPasswordOrEmail, null);
             }
             // Check if email is verified
             if (!user.IsEmailVerified)
             {
-                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Email not verified. Please verify your email before logging in.", AppStatusCode.EMAIL_NOT_VERIFIED, null);
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Email not verified. Please verify your email before logging in.", AppStatusCode.EmailNotVerified, null);
             }
             // Create JWT token
             var jwtToken = CreateJwtToken(user);
@@ -188,7 +188,7 @@ namespace TastyGo.Services
             var user = await _userRepository.GetByEmailAsync(forgotPasswordDto.Email);
             if (user is null)
             {
-                return new ServiceResponse<object>(ResponseStatus.NotFound, "User not found.", AppStatusCode.ACCOUNT_NOT_FOUND, null);
+                return new ServiceResponse<object>(ResponseStatus.NotFound, "User not found.", AppStatusCode.AccountNotFound, null);
             }
             // Generate a password reset token
             var resetToken = RandomCharacterGenerator.GenerateRandomString(_constants.PASSWORD_RESET_TOKEN_LENGTH);
@@ -199,11 +199,11 @@ namespace TastyGo.Services
             var saveResult = await _userRepository.SaveChangesAsync();
             if (!saveResult)
             {
-                return new ServiceResponse<object>(ResponseStatus.Error, "Failed to initiate password reset. Please try again later.", AppStatusCode.SERVER_ERROR, null);
+                return new ServiceResponse<object>(ResponseStatus.Error, "Failed to initiate password reset. Please try again later.", AppStatusCode.InternalServerError, null);
             }
             // Send password reset email (implementation not shown here)
             await SendVerificationMail(user, resetToken);
-            return new ServiceResponse<object>(ResponseStatus.Success, "Password reset token sent successfully.", AppStatusCode.PASSWORD_RESET_SENT, null);
+            return new ServiceResponse<object>(ResponseStatus.Success, "Password reset token sent successfully.", AppStatusCode.PasswordResetSent, null);
 
         }
 
@@ -219,7 +219,7 @@ namespace TastyGo.Services
                 return new ServiceResponse<object>(
                     ResponseStatus.BadRequest,
                     "Invalid or expired token.",
-                    AppStatusCode.TOKEN_INVALID,
+                    AppStatusCode.InvalidToken,
                     null
                 );
             }
@@ -239,7 +239,7 @@ namespace TastyGo.Services
             var saveResult = await _userRepository.SaveChangesAsync();
             if (!saveResult)
             {
-                return new ServiceResponse<object>(ResponseStatus.Error, "Failed to reset password. Please try again later.", AppStatusCode.SERVER_ERROR, null);
+                return new ServiceResponse<object>(ResponseStatus.Error, "Failed to reset password. Please try again later.", AppStatusCode.InternalServerError, null);
             }
             return new ServiceResponse<object>(ResponseStatus.Success, "Password reset successful.", AppStatusCode.Success, null);
 
@@ -262,17 +262,17 @@ namespace TastyGo.Services
             var user = await _userRepository.GetByEmailAsync(emailVerifyDto.Email);
             if (user is null)
             {
-                return new ServiceResponse<object>(ResponseStatus.NotFound, "User not found.", AppStatusCode.ACCOUNT_NOT_FOUND, null);
+                return new ServiceResponse<object>(ResponseStatus.NotFound, "User not found.", AppStatusCode.AccountNotFound, null);
             }
             // Check if the token matches
             if (user.EmailVerificationToken != emailVerifyDto.Token)
             {
-                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Invalid verification token.", AppStatusCode.TOKEN_INVALID, null);
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Invalid verification token.", AppStatusCode.InvalidToken, null);
             }
             // Check if the token has expired
             if (user.EmailVerificationTokenExpiry < DateTime.UtcNow)
             {
-                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Verification token has expired.", AppStatusCode.TOKEN_EXPIRED, null);
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Verification token has expired.", AppStatusCode.TokenExpired, null);
             }
             // Update user verification status
             user.IsEmailVerified = true;
@@ -284,7 +284,7 @@ namespace TastyGo.Services
             var saveResult = await _userRepository.SaveChangesAsync();
             if (!saveResult)
             {
-                return new ServiceResponse<object>(ResponseStatus.Error, "Failed to verify email. Please try again later.", AppStatusCode.SERVER_ERROR, null);
+                return new ServiceResponse<object>(ResponseStatus.Error, "Failed to verify email. Please try again later.", AppStatusCode.InternalServerError, null);
             }
 
             return new ServiceResponse<object>(ResponseStatus.Success, "Email verification successful.", AppStatusCode.Success, null);
@@ -294,7 +294,7 @@ namespace TastyGo.Services
 
         public async Task<ServiceResponse<object>> CreatePin(CreatePinDto createPinDto)
         {
-            var userId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId();
+            var userId = _userContextService.UserId;
 
             var user = await _userRepository.GetByIdAsync(userId);
             if (user is null)
@@ -307,7 +307,7 @@ namespace TastyGo.Services
                 return new ServiceResponse<object>(
                     ResponseStatus.BadRequest,
                     "PIN already created. Please reset it instead.",
-                    AppStatusCode.PIN_ALREADY_CREATED,
+                    AppStatusCode.PinAlreadyCreated,
                     null
                 );
             }
@@ -343,7 +343,7 @@ namespace TastyGo.Services
                 return new ServiceResponse<object>(
                     ResponseStatus.Error,
                     "Something went wrong while creating PIN.",
-                    AppStatusCode.SERVER_ERROR,
+                    AppStatusCode.InternalServerError,
                     null
                 );
             }
@@ -359,7 +359,7 @@ namespace TastyGo.Services
 
         public async Task<ServiceResponse<object>> ResetPin(ResetPinDto resetPinDto)
         {
-            var userId = _httpContextAccessor.HttpContext.User.GetLoggedInUserId();
+            var userId = _userContextService.UserId;
 
             var user = await _userRepository.GetByIdAsync(userId);
             if (user is null)

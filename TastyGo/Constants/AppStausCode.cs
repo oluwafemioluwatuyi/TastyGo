@@ -12,22 +12,18 @@ namespace TastyGo.Helpers
         ValidationError = 1006,
         InternalServerError = 1111,
 
-        INVALID_PASSWORD_EMAIL = 1007,
-        PIN_ALREADY_CREATED = 1008,
+        InvalidPasswordOrEmail = 1007,
+        PinAlreadyCreated = 1008,
         NoPinCreated = 1009,
 
-        // Authentication & Account (1100–1199)
-        AUTH_SUCCESS = 1100,
-        AUTH_FAILED = 1101,
-
-        EMAIL_ALREADY_EXISTS = 1102,
-        EMAIL_NOT_VERIFIED = 1103,
-        ACCOUNT_LOCKED = 1104,
-        ACCOUNT_NOT_FOUND = 1105,
-        PASSWORD_RESET_SENT = 1106,
-        PASSWORD_RESET_FAILED = 1107,
-        TOKEN_EXPIRED = 1108,
-        TOKEN_INVALID = 1109,
+        EmailAlreadyExists = 1102,
+        EmailNotVerified = 1103,
+        AccountNotFound = 1104,
+        AccountLocked = 1105,
+        PasswordResetSent = 1106,
+        PasswordResetFailed = 1107,
+        TokenExpired = 1108,
+        InvalidToken = 1109,
 
         // Validation & Input (1200–1299)
         FIELD_REQUIRED = 1200,
@@ -70,10 +66,5 @@ namespace TastyGo.Helpers
         PROMO_INVALID = 1701,
         PROMO_USAGE_LIMIT = 1702,
 
-        // System (1800–1899)
-        SERVER_ERROR = 1800,
-        DB_ERROR = 1801,
-        SERVICE_UNAVAILABLE = 1802,
-        TIMEOUT = 1803
     }
 }
