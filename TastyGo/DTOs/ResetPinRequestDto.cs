@@ -2,7 +2,7 @@ using System;
 
 namespace TastyGo.DTOs;
 
-public class ResetPinDto
+public class ResetPinRequestDto
 {
     public string Email { get; set; }
     public string OldPin { get; set; } // The old pin to be verified

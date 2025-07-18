@@ -8,11 +8,11 @@ namespace TastyGo.Interfaces.Services
         Task<ServiceResponse<object>> RegisterAsync(RegisterRequestDto request);
         Task<ServiceResponse<object>> LoginAsync(LoginRequestDto request);
         Task LogoutAsync();
-        Task<ServiceResponse<object>> VerifyEmail(EmailVerifyDto emailVerifyDto);
-        Task<ServiceResponse<object>> ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto);
-        Task<ServiceResponse<object>> ResetPasswordAsync(ResetPasswordDto resetPasswordDto);
-        Task<ServiceResponse<object>> CreatePin(CreatePinDto createPinDto);
-        Task<ServiceResponse<object>> ResetPin(ResetPinDto resetPinDto);
+        Task<ServiceResponse<object>> VerifyEmail(VerifyEmailRequestDto verifyEmailRequestDto);
+        Task<ServiceResponse<object>> ForgotPasswordAsync(ForgotPasswordRequestDto forgotPasswordDto);
+        Task<ServiceResponse<object>> ResetPasswordAsync(ResetPasswordRequestDto resetPasswordDto);
+        Task<ServiceResponse<object>> CreatePin(CreatePinRequestDto createPinDto);
+        Task<ServiceResponse<object>> ResetPin(ResetPinRequestDto resetPinDto);
 
         // Forgot Password
         Task SendPasswordResetTokenAsync(string email);

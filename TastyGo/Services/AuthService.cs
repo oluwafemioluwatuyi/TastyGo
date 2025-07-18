@@ -66,16 +66,16 @@ namespace TastyGo.Services
                         }
 
                         // Verify BVN
-                        var (isValidBvn, bvnMessage) = await VerifyBVN(new VerifyBvnDto
+                        var (isValidNin, ninMessage) = await VerifyNIN(new VerifyNinDto
                         {
-                            Bvn = registerRequestDto.NIN,
+                            Nin = registerRequestDto.NIN,
                             Name = $"{registerRequestDto.FirstName} {registerRequestDto.LastName}",
                             DateOfBirth = registerRequestDto.DateOfBirth,
                             MobileNo = registerRequestDto.Phone
                         });
 
-                        if (!isValidBvn)
-                            return new ServiceResponse<object>(ResponseStatus.BadRequest, bvnMessage, AppStatusCode.ValidationError, null);
+                        if (!isValidNin)
+                            return new ServiceResponse<object>(ResponseStatus.BadRequest, ninMessage, AppStatusCode.ValidationError, null);
 
                         // Verify License
                         var (isValidLicense, licenseMessage) = await VerifyLicense(new VerifyLicenseDto
@@ -182,10 +182,10 @@ namespace TastyGo.Services
 
         }
 
-        public async Task<ServiceResponse<object>> ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto)
+        public async Task<ServiceResponse<object>> ForgotPasswordAsync(ForgotPasswordRequestDto forgotPasswordRequestDto)
         {
             // Check if the user exists
-            var user = await _userRepository.GetByEmailAsync(forgotPasswordDto.Email);
+            var user = await _userRepository.GetByEmailAsync(forgotPasswordRequestDto.Email);
             if (user is null)
             {
                 return new ServiceResponse<object>(ResponseStatus.NotFound, "User not found.", AppStatusCode.AccountNotFound, null);
@@ -207,13 +207,13 @@ namespace TastyGo.Services
 
         }
 
-        public async Task<ServiceResponse<object>> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
+        public async Task<ServiceResponse<object>> ResetPasswordAsync(ResetPasswordRequestDto resetPasswordRequestDto)
         {
             // Check if the user exists
-            var user = await _userRepository.GetByEmailAsync(resetPasswordDto.Email);
+            var user = await _userRepository.GetByEmailAsync(resetPasswordRequestDto.Email);
             // Generic failure to avoid leaking info
             if (user is null ||
-                user.PasswordResetToken != resetPasswordDto.Token ||
+                user.PasswordResetToken != resetPasswordRequestDto.Token ||
                 user.PasswordResetTokenExpiry < DateTime.UtcNow)
             {
                 return new ServiceResponse<object>(
@@ -224,12 +224,12 @@ namespace TastyGo.Services
                 );
             }
             // Validate that new passwords match
-            if (resetPasswordDto.NewPassword != resetPasswordDto.ConfirmPassword)
+            if (resetPasswordRequestDto.NewPassword != resetPasswordRequestDto.ConfirmPassword)
             {
                 return new ServiceResponse<object>(ResponseStatus.BadRequest, "New passwords do not match.", AppStatusCode.ValidationError, null);
             }
             // Hash the new password
-            user.Password = HashPassword(resetPasswordDto.NewPassword);
+            user.Password = HashPassword(resetPasswordRequestDto.NewPassword);
             // Clear the reset token and expiry
             user.PasswordResetToken = null;
             user.PasswordResetTokenExpiry = null;
@@ -256,16 +256,16 @@ namespace TastyGo.Services
             throw new NotImplementedException();
         }
 
-        public async Task<ServiceResponse<object>> VerifyEmail(EmailVerifyDto emailVerifyDto)
+        public async Task<ServiceResponse<object>> VerifyEmail(VerifyEmailRequestDto verifyEmailRequestDto)
         {
             // Check if the user exists
-            var user = await _userRepository.GetByEmailAsync(emailVerifyDto.Email);
+            var user = await _userRepository.GetByEmailAsync(verifyEmailRequestDto.Email);
             if (user is null)
             {
                 return new ServiceResponse<object>(ResponseStatus.NotFound, "User not found.", AppStatusCode.AccountNotFound, null);
             }
             // Check if the token matches
-            if (user.EmailVerificationToken != emailVerifyDto.Token)
+            if (user.EmailVerificationToken != verifyEmailRequestDto.Token)
             {
                 return new ServiceResponse<object>(ResponseStatus.BadRequest, "Invalid verification token.", AppStatusCode.InvalidToken, null);
             }
@@ -292,7 +292,7 @@ namespace TastyGo.Services
 
         }
 
-        public async Task<ServiceResponse<object>> CreatePin(CreatePinDto createPinDto)
+        public async Task<ServiceResponse<object>> CreatePin(CreatePinRequestDto createPinDto)
         {
             var userId = _userContextService.UserId;
 
@@ -357,7 +357,7 @@ namespace TastyGo.Services
 
         }
 
-        public async Task<ServiceResponse<object>> ResetPin(ResetPinDto resetPinDto)
+        public async Task<ServiceResponse<object>> ResetPin(ResetPinRequestDto resetPinDto)
         {
             var userId = _userContextService.UserId;
 
@@ -453,7 +453,7 @@ namespace TastyGo.Services
             return BCrypt.Net.BCrypt.Verify(password, passwordHash);
         }
 
-        private async Task<(bool, string)> VerifyBVN(VerifyBvnDto verifyBvnDto)
+        private async Task<(bool, string)> VerifyNIN(VerifyNinDto verifyNinDto)
         {
             var message = "BVN verification is successful.";
             await Task.Delay(0); // Simulate async operation

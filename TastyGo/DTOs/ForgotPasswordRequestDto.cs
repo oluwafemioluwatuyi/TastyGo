@@ -1,7 +1,7 @@
 using System;
 namespace TastyGo.DTOs;
 
-public class ForgotPasswordDto
+public class ForgotPasswordRequestDto
 {
     public string Email { get; set; }
 }

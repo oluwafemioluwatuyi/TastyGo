@@ -1,7 +1,7 @@
 using System;
 namespace TastyGo.DTOs;
 
-public class CreatePinDto
+public class CreatePinRequestDto
 {
     public string Email { get; set; }
     public string Pin { get; set; } // The pin to be created

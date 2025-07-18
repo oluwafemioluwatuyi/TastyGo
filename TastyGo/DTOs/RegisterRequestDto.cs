@@ -9,7 +9,7 @@ namespace TastyGo.DTOs
 
         public string Email { get; set; }
         public string Phone { get; set; }
-        public string? DateOfBirth { get; set; } // Format: YYYY-MM-DD
+        public string DateOfBirth { get; set; } // Format: YYYY-MM-DD
 
         public string Password { get; set; }
         public string ConfirmPassword { get; set; }
