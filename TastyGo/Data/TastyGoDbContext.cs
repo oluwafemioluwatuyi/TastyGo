@@ -22,6 +22,7 @@ namespace TastyGo.Data
             ConfigureEnumConverter<Module, Modules>(modelBuilder, e => e.Identifier);
 
             // Configure AuditableEntity
+            ConfigureAuditableEntity<RefreshToken>(modelBuilder);
             ConfigureAuditableEntity<Address>(modelBuilder);
             ConfigureAuditableEntity<Driver>(modelBuilder);
             ConfigureAuditableEntity<Vendor>(modelBuilder);
@@ -106,6 +107,7 @@ namespace TastyGo.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Driver> Drivers { get; set; }
         public DbSet<Vendor> Vendors { get; set; }

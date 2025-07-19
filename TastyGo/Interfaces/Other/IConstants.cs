@@ -22,6 +22,8 @@
         int PASSWORD_RESET_TOKEN_LENGTH { get; }
         int EMAIL_VERIFICATION_TOKEN_LENGTH { get; }
         int EMAIL_VERIFICATION_TOKEN_EXPIRATION_MINUTES { get; }
+        int REFRESH_TOKEN_LENGTH { get; }
+        int REFRESH_TOKEN_EXPIRATION_DAYS { get; }
 
     }
 }

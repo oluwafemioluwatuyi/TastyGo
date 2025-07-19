@@ -25,5 +25,7 @@ namespace TastyGo.Constants
         public int EMAIL_VERIFICATION_TOKEN_LENGTH => 6; // Also 6-digit, consistent with reset
 
         public int EMAIL_VERIFICATION_TOKEN_EXPIRATION_MINUTES => 60; // 1 hour
+        public int REFRESH_TOKEN_LENGTH => 32; // Length of the refresh token
+        public int REFRESH_TOKEN_EXPIRATION_DAYS => 7; // Refresh token valid for 7 days
     }
 }

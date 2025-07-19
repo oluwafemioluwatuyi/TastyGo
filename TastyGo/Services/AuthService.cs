@@ -8,6 +8,7 @@ using TastyGo.DTOs;
 using TastyGo.Helpers;
 using TastyGo.Interfaces.IRepositories;
 using TastyGo.Interfaces.Other;
+using TastyGo.Interfaces.Repositories;
 using TastyGo.Interfaces.Services;
 using TastyGo.Models;
 using TastyGo.Utils;
@@ -17,14 +18,16 @@ namespace TastyGo.Services
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IConstants _constants;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
         private readonly IUserContextService _userContextService;
-        public AuthService(IUserRepository userRepository, IConstants constants, IMapper mapper, IConfiguration configuration, ILogger<AuthService> logger, IUserContextService userContextService)
+        public AuthService(IUserRepository userRepository, IRefreshTokenRepository refreshTokenRepository, IConstants constants, IMapper mapper, IConfiguration configuration, ILogger<AuthService> logger, IUserContextService userContextService)
         {
             _userRepository = userRepository;
+            _refreshTokenRepository = refreshTokenRepository;
             _mapper = mapper;
             _configuration = configuration;
             _logger = logger;
@@ -171,15 +174,86 @@ namespace TastyGo.Services
                 return new ServiceResponse<object>(ResponseStatus.BadRequest, "Email not verified. Please verify your email before logging in.", AppStatusCode.EmailNotVerified, null);
             }
             // Create JWT token
+            // 4. Create Access Token (JWT)
             var jwtToken = CreateJwtToken(user);
+            // Decode the JWT to get the JTI (JWT ID)
+            var jwtHandler = new JwtSecurityTokenHandler();
+            var jwtDecoded = jwtHandler.ReadJwtToken(jwtToken);
+            var jti = jwtDecoded.Id;
+
+            // 5. Create and Save Refresh Token
+            var refreshToken = new RefreshToken
+            {
+                Token = RandomCharacterGenerator.GenerateRandomString(_constants.REFRESH_TOKEN_LENGTH),
+                JwtId = jti,
+                UserId = user.Id,
+                ExpiryDate = DateTime.UtcNow.AddDays(_constants.REFRESH_TOKEN_EXPIRATION_DAYS),
+                CreatedAtUtc = DateTime.UtcNow,
+                Used = false,
+                Invalidated = false
+            };
+
+            _refreshTokenRepository.Add(refreshToken);
+            await _refreshTokenRepository.SaveChangesAsync();
             // Map user to UserDto
             var userDto = _mapper.Map<UserDto>(user);
             return new ServiceResponse<object>(ResponseStatus.Success, "Login successful.", AppStatusCode.Success, new
             {
-                Token = jwtToken,
+                AccessToken = jwtToken,
+                RefreshToken = refreshToken.Token,
                 User = userDto
             });
 
+        }
+
+        public async Task<ServiceResponse<object>> RefreshTokenAsync(string? existingToken = null)
+        {
+            var storedToken = await _refreshTokenRepository.GetByTokenAsync(existingToken);
+
+            if (storedToken == null || storedToken.Used || storedToken.Invalidated || storedToken.ExpiryDate < DateTime.UtcNow)
+            {
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "Invalid refresh token", AppStatusCode.InvalidToken, null);
+            }
+
+            // Get user from token
+            var user = await _userRepository.GetByIdAsync(storedToken.UserId);
+            if (user is null)
+            {
+                return new ServiceResponse<object>(ResponseStatus.BadRequest, "User not found", AppStatusCode.ValidationError, null);
+            }
+
+            // Mark token as used
+            storedToken.Used = true;
+            _refreshTokenRepository.MarkAsModified(storedToken);
+
+            var newAccessToken = CreateJwtToken(user);
+            // Decode the JWT to get the JTI (JWT ID)
+            var jwtHandler = new JwtSecurityTokenHandler();
+            var jwtDecoded = jwtHandler.ReadJwtToken(newAccessToken);
+            var jti = jwtDecoded.Id;
+
+            // Generate new refresh token
+            var newRefreshToken = new RefreshToken
+            {
+                Token = RandomCharacterGenerator.GenerateRandomString(_constants.REFRESH_TOKEN_LENGTH),
+                JwtId = jti,
+                UserId = user.Id,
+                ExpiryDate = DateTime.UtcNow.AddDays(_constants.REFRESH_TOKEN_EXPIRATION_DAYS),
+                CreatedAtUtc = DateTime.UtcNow,
+                Used = false,
+                Invalidated = false
+            };
+
+            _refreshTokenRepository.Add(newRefreshToken);
+            await _refreshTokenRepository.SaveChangesAsync();
+
+            var result = new
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken.Token
+            };
+
+            return new ServiceResponse<object>(ResponseStatus.Success, "Token refreshed successfully", AppStatusCode.Success, result);
         }
 
         public async Task<ServiceResponse<object>> ForgotPasswordAsync(ForgotPasswordRequestDto forgotPasswordRequestDto)
@@ -432,7 +506,7 @@ namespace TastyGo.Services
             // Creating new JWT object
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddDays(1),
+                expires: DateTime.Now.AddMinutes(1),
                 signingCredentials: creds
             );
 

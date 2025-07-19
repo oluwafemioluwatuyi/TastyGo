@@ -1,5 +1,6 @@
 using TastyGo.DTOs;
 using TastyGo.Helpers;
+using TastyGo.Models;
 
 namespace TastyGo.Interfaces.Services
 {
@@ -7,6 +8,7 @@ namespace TastyGo.Interfaces.Services
     {
         Task<ServiceResponse<object>> RegisterAsync(RegisterRequestDto request);
         Task<ServiceResponse<object>> LoginAsync(LoginRequestDto request);
+        Task<ServiceResponse<object>> RefreshTokenAsync(string? existingToken = null);
         Task LogoutAsync();
         Task<ServiceResponse<object>> VerifyEmail(VerifyEmailRequestDto verifyEmailRequestDto);
         Task<ServiceResponse<object>> ForgotPasswordAsync(ForgotPasswordRequestDto forgotPasswordDto);
