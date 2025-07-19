@@ -214,6 +214,12 @@ namespace TastyGo.Services
 
             if (storedToken == null || storedToken.Used || storedToken.Invalidated || storedToken.ExpiryDate < DateTime.UtcNow)
             {
+                if (storedToken != null)
+                {
+                    // Delete the invalid/expired/revoked token
+                    _refreshTokenRepository.Delete(storedToken);
+                    await _refreshTokenRepository.SaveChangesAsync();
+                }
                 return new ServiceResponse<object>(ResponseStatus.BadRequest, "Invalid refresh token", AppStatusCode.InvalidToken, null);
             }
 
