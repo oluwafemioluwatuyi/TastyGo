@@ -12,6 +12,7 @@ using TastyGo.Data;
 using TastyGo.Helpers;
 using TastyGo.Interfaces.IRepositories;
 using TastyGo.Interfaces.Other;
+using TastyGo.Interfaces.Repositories;
 using TastyGo.Interfaces.Services;
 using TastyGo.Repositories;
 using TastyGo.Services;
@@ -63,6 +64,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JWT:Token").Value)),
             ValidateIssuer = false,
+            ValidateLifetime = true,
             ValidateAudience = false
         };
 
@@ -149,12 +151,14 @@ builder.Services.AddDbContext<TastyGoDbContext>(opt =>
 
 //Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
 
 
 //services
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
 
 
 // builder.Services.AddSingleton<IEmailService>(provider =>

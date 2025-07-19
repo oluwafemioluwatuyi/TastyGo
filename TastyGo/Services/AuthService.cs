@@ -189,6 +189,8 @@ namespace TastyGo.Services
                 UserId = user.Id,
                 ExpiryDate = DateTime.UtcNow.AddDays(_constants.REFRESH_TOKEN_EXPIRATION_DAYS),
                 CreatedAtUtc = DateTime.UtcNow,
+                CreatedById = user.Id,         // ✅ Required by AuditableEntity
+                ModifiedById = user.Id,
                 Used = false,
                 Invalidated = false
             };
@@ -240,6 +242,8 @@ namespace TastyGo.Services
                 UserId = user.Id,
                 ExpiryDate = DateTime.UtcNow.AddDays(_constants.REFRESH_TOKEN_EXPIRATION_DAYS),
                 CreatedAtUtc = DateTime.UtcNow,
+                CreatedById = user.Id,         // ✅ Required by AuditableEntity
+                ModifiedById = user.Id,
                 Used = false,
                 Invalidated = false
             };
@@ -493,9 +497,10 @@ namespace TastyGo.Services
             List<Claim> claims = new List<Claim>{
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             // new Claim(ClaimTypes.Role, user.Role.ToString())
 
-        };
+            };
 
             // Creating a new SymmetricKey from Token we have saved in appSettings.development.json file
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("JWT:Token").Value));
