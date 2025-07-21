@@ -1,5 +1,7 @@
 
+using Microsoft.EntityFrameworkCore;
 using TastyGo.Data;
+using TastyGo.DTOs.SearchParams;
 using TastyGo.Interfaces.IRepositories;
 using TastyGo.Models;
 
@@ -16,22 +18,25 @@ namespace TastyGo.Repositories
         }
         public void Add(Restaurant restaurant)
         {
-            throw new NotImplementedException();
+            _dbContext.Restaurants.Add(restaurant);
         }
 
         public void Delete(Restaurant restaurant)
         {
-            throw new NotImplementedException();
+            _dbContext.Restaurants.Remove(restaurant);
         }
 
-        public Task<Restaurant?> FindByIdAsync(Guid restaurantId)
+        public async Task<Restaurant?> FindByIdAsync(Guid restaurantId)
         {
-            throw new NotImplementedException();
+            return await _dbContext.Restaurants.FirstOrDefaultAsync(r => r.Id == restaurantId);
         }
 
-        public Task<IEnumerable<Restaurant>> GetAllAsync()
+        public async Task<IEnumerable<Restaurant>> GetAllAsync(RestaurantSearchParamsDto searchParamsDto)
         {
-            throw new NotImplementedException();
+            return await _dbContext.Restaurants
+                .Include(r => r.Menus)
+                .Include(r => r.Orders)
+                .ToListAsync();
         }
 
         public Task<IEnumerable<Restaurant>> GetNearbyAsync(double latitude, double longitude, double radiusInKm)
@@ -41,17 +46,18 @@ namespace TastyGo.Repositories
 
         public void MarkAsModified(Restaurant restaurant)
         {
-            throw new NotImplementedException();
+            _dbContext.Entry(restaurant).State = EntityState.Modified;
         }
 
-        public Task<bool> RestaurantExistsAsync(string name)
+        public async Task<bool> RestaurantExistsAsync(string name)
         {
-            throw new NotImplementedException();
+            return await _dbContext.Restaurants.AnyAsync(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
         }
 
-        public Task<bool> SaveChangesAsync()
+        public async Task<bool> SaveChangesAsync()
         {
-            throw new NotImplementedException();
+            return await _dbContext.SaveChangesAsync() > 0;
         }
     }
 }

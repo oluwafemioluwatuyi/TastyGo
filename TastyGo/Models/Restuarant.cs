@@ -15,6 +15,8 @@ namespace TastyGo.Models
         public TimeSpan ClosesAt { get; set; }
 
         // Navigation properties
+        public Guid UserId { get; set; }
+        public User User { get; set; }
         public ICollection<Menu> Menus { get; set; } = new List<Menu>();
         public ICollection<Order> Orders { get; set; } = new List<Order>();
 

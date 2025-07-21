@@ -11,6 +11,7 @@ namespace TastyGo.Helpers
         {
             CreateMap<User, UserDto>();
             CreateMap<RegisterRequestDto, User>();
+            CreateMap<CreateRestaurantDto, Restaurant>();
 
         }
     }
