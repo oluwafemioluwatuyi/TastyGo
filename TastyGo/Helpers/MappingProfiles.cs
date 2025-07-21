@@ -1,5 +1,6 @@
 using AutoMapper;
 using TastyGo.DTOs;
+using TastyGo.DTOs.Vendor;
 using TastyGo.Interfaces;
 using TastyGo.Models;
 
@@ -9,9 +10,11 @@ namespace TastyGo.Helpers
     {
         public MappingProfiles()
         {
-            CreateMap<User, UserDto>();
-            CreateMap<RegisterRequestDto, User>();
-            CreateMap<CreateRestaurantDto, Restaurant>();
+            CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<RegisterRequestDto, User>().ReverseMap();
+            CreateMap<CreateVendorDto, Vendor>().ReverseMap();
+            CreateMap<VendorDto, Vendor>().ReverseMap();
+            CreateMap<CreateRestaurantDto, Restaurant>().ReverseMap();
 
         }
     }

@@ -7,7 +7,6 @@
         public string LastName { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
-        public string? Phone { get; set; }
         public UserType userType { get; set; }
 
         public string? Pin { get; set; }
@@ -26,6 +25,8 @@
         //navigation
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+        public Vendor? Vendor { get; set; }
+        public ICollection<Address> Addresses { get; set; } = new List<Address>();
 
 
 

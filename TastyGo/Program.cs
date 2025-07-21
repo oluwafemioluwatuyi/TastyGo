@@ -64,7 +64,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JWT:Token").Value)),
             ValidateIssuer = false,
-            ValidateLifetime = true,
+            // ValidateLifetime = true,
             ValidateAudience = false
         };
 
@@ -152,12 +152,16 @@ builder.Services.AddDbContext<TastyGoDbContext>(opt =>
 //Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IVendorRepository, VendorRepository>();
+builder.Services.AddScoped<IRestaurantRepository, RestaurantRepository>();
 
 
 
 //services
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IVendorService, VendorService>();
+builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 
 
 

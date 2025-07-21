@@ -5,7 +5,7 @@ using TastyGo.DTOs;
 using TastyGo.Helpers;
 using TastyGo.Models;
 
-namespace TastyGo.Interfaces.IServices
+namespace TastyGo.Interfaces.Services
 {
     public interface IRestaurantService
     {

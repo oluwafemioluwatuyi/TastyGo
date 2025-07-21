@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using TastyGo.DTOs;
 using TastyGo.Helpers;
 using TastyGo.Interfaces;
-using TastyGo.Interfaces.IServices;
+using TastyGo.Interfaces.Services;
 
 
 namespace TastyGo.Controllers;
@@ -21,7 +21,7 @@ public class RestaurantController : ControllerBase
         this.restaurantService = restaurantService;
     }
 
-    [HttpPost("create")]
+    [HttpPost("create-restaurant")]
     [Authorize]
     public async Task<IActionResult> CreateRestaurant([FromBody] CreateRestaurantDto createRestaurantDto)
     {
@@ -44,7 +44,7 @@ public class RestaurantController : ControllerBase
         return ControllerHelper.HandleApiResponse(response);
     }
 
-    [HttpPut("{restaurantId}")]
+    [HttpPut("update-restaurant/{restaurantId}")]
     [Authorize]
     public async Task<IActionResult> UpdateRestaurant([FromBody] UpdateRestaurantRequestDto updateRestaurantRequestDto, Guid restaurantId)
     {
