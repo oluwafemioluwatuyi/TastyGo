@@ -18,12 +18,14 @@ namespace TastyGo.Repositories
         public async Task<Vendor?> GetByIdAsync(Guid id)
         {
             return await _dbContext.Vendors.Include(v => v.User)
-                                         .FirstOrDefaultAsync(v => v.Id == id);
+                                            .Include(v => v.Restaurants)
+                                            .FirstOrDefaultAsync(v => v.Id == id);
         }
 
         public async Task<Vendor?> GetByUserIdAsync(Guid userId)
         {
-            return await _dbContext.Vendors.FirstOrDefaultAsync(v => v.UserId == userId);
+            return await _dbContext.Vendors.Include(v => v.Restaurants)
+                                            .FirstOrDefaultAsync(v => v.UserId == userId);
         }
 
         public void Add(Vendor vendor)

@@ -23,7 +23,7 @@ public class VendorController : ControllerBase
 
     }
 
-    [HttpPost("create-vendor")]
+    [HttpPost]
     [Authorize]
     public async Task<IActionResult> Create([FromBody] CreateVendorDto createVendorDto)
     {
@@ -31,7 +31,7 @@ public class VendorController : ControllerBase
         return ControllerHelper.HandleApiResponse(response);
     }
 
-    [HttpDelete("delete/{id}")]
+    [HttpDelete("{id}")]
     [Authorize]
     public async Task<IActionResult> DeleteVendor(Guid id)
     {

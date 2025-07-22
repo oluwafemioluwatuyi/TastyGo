@@ -15,6 +15,10 @@ namespace TastyGo.Helpers
             CreateMap<CreateVendorDto, Vendor>().ReverseMap();
             CreateMap<VendorDto, Vendor>().ReverseMap();
             CreateMap<CreateRestaurantDto, Restaurant>().ReverseMap();
+            CreateMap<Restaurant, RestaurantDto>().ReverseMap();
+            CreateMap<UpdateRestaurantRequestDto, Restaurant>().ReverseMap();
+            CreateMap<Menu, MenuDto>().ReverseMap();
+
 
         }
     }

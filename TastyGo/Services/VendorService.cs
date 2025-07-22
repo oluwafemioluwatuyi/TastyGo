@@ -45,9 +45,9 @@ public class VendorService : IVendorService
         vendor.ModifiedById = currentUserId;
         vendor.CreatedAt = DateTime.UtcNow;
         vendor.ModifiedAt = DateTime.UtcNow;
+
         _vendorRepository.Add(vendor);
 
-        // Save changes to the database
         await _vendorRepository.SaveChangesAsync();
         // Map the created vendor to a DTO
         var vendorDto = _mapper.Map<VendorDto>(vendor);
@@ -72,9 +72,9 @@ public class VendorService : IVendorService
         {
             return new ServiceResponse<bool>(ResponseStatus.NotFound, "Vendor not found or does not belong to the user.", AppStatusCode.AccountNotFound, false);
         }
-        // Delete the vendor
+
         _vendorRepository.Delete(vendor);
-        // Save changes to the database
+
         var success = await _vendorRepository.SaveChangesAsync();
         if (!success)
         {

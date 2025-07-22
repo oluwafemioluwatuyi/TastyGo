@@ -33,13 +33,19 @@ namespace TastyGo.Services
                 return new ServiceResponse<object>(ResponseStatus.Unauthorized, "User not authenticated.", AppStatusCode.Unauthorized, null);
             }
             // Check if the user is a restaurant owner
-            var user = await _vendorRepository.GetByUserIdAsync(userId);
-            if (user is null)
+            var vendor = await _vendorRepository.GetByUserIdAsync(userId);
+            if (vendor is null)
             {
                 return new ServiceResponse<object>(ResponseStatus.Forbidden, "User is not a restaurant owner.", AppStatusCode.Forbidden, null);
             }
             // Create the restaurant entity
             var restaurant = _mapper.Map<Restaurant>(createRestaurantDto);
+            // Set the vendor ID from the user context
+            restaurant.VendorId = vendor.Id;
+            restaurant.ModifiedAt = DateTime.UtcNow;
+            restaurant.CreatedAt = DateTime.UtcNow;
+            restaurant.CreatedById = userId;
+            restaurant.ModifiedById = userId;
 
             _restaurantRepository.Add(restaurant);
 
@@ -104,32 +110,33 @@ namespace TastyGo.Services
         public async Task<ServiceResponse<object?>> GetRestaurantByIdAsync(Guid restaurantId)
         {
 
+            // public for both vendor, user, and admin
+
             var userId = _userContextService.UserId;
             if (userId == null)
             {
                 return new ServiceResponse<object?>(ResponseStatus.Unauthorized, "User not authenticated.", AppStatusCode.Unauthorized, null);
             }
 
-            var vendor = await _vendorRepository.GetByUserIdAsync(userId);
-            if (vendor == null)
-            {
-                return new ServiceResponse<object?>(ResponseStatus.Forbidden, "User is not a vendor.", AppStatusCode.Forbidden, null);
-            }
-
             var restaurant = await _restaurantRepository.FindByIdAsync(restaurantId);
             if (restaurant == null)
             {
-                return new ServiceResponse<object?>(ResponseStatus.NotFound, "Restaurant not found.", AppStatusCode.AccountNotFound, null);
-            }
-
-            // Ensure vendor owns this restaurant
-            if (restaurant.VendorId != vendor.Id)
-            {
-                return new ServiceResponse<object?>(ResponseStatus.Forbidden, "Not authorized to view this restaurant.", AppStatusCode.Forbidden, null);
+                return new ServiceResponse<object?>(
+                    ResponseStatus.NotFound,
+                    "Restaurant not found.",
+                    AppStatusCode.AccountNotFound,
+                    null
+                );
             }
 
             var restaurantDto = _mapper.Map<RestaurantDto>(restaurant);
-            return new ServiceResponse<object?>(ResponseStatus.Success, "Restaurant retrieved successfully.", AppStatusCode.Success, restaurantDto);
+            return new ServiceResponse<object?>(
+                ResponseStatus.Success,
+                "Restaurant retrieved successfully.",
+                AppStatusCode.Success,
+                restaurantDto
+            );
+
         }
 
         public async Task<ServiceResponse<object>> UpdateRestaurantAsync(UpdateRestaurantRequestDto updateRestaurantRequestDto, Guid restaurantId)

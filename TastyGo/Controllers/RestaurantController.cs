@@ -21,7 +21,7 @@ public class RestaurantController : ControllerBase
         this.restaurantService = restaurantService;
     }
 
-    [HttpPost("create-restaurant")]
+    [HttpPost]
     [Authorize]
     public async Task<IActionResult> CreateRestaurant([FromBody] CreateRestaurantDto createRestaurantDto)
     {
@@ -38,13 +38,14 @@ public class RestaurantController : ControllerBase
     }
 
     [HttpGet("{restaurantId}")]
+    [Authorize]
     public async Task<IActionResult> GetRestaurantById(Guid restaurantId)
     {
         var response = await restaurantService.GetRestaurantByIdAsync(restaurantId);
         return ControllerHelper.HandleApiResponse(response);
     }
 
-    [HttpPut("update-restaurant/{restaurantId}")]
+    [HttpPut("{restaurantId}")]
     [Authorize]
     public async Task<IActionResult> UpdateRestaurant([FromBody] UpdateRestaurantRequestDto updateRestaurantRequestDto, Guid restaurantId)
     {
